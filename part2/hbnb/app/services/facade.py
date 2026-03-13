@@ -1,4 +1,4 @@
-from app.persistence.repository import InMemoryRepository
+from app.persistence.repository import SQLAlchemyRepository
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
@@ -6,10 +6,10 @@ from app.models.review import Review
 
 class HBnBFacade:
     def __init__(self):
-        self.user_repo = InMemoryRepository()
-        self.place_repo = InMemoryRepository()
-        self.review_repo = InMemoryRepository()
-        self.amenity_repo = InMemoryRepository()
+        self.user_repo = SQLAlchemyRepository(User)
+        self.place_repo = SQLAlchemyRepository(Place)
+        self.review_repo = SQLAlchemyRepository(Review)
+        self.amenity_repo = SQLAlchemyRepository(Amenity)
 
     def create_user(self, user_data):
         user = User(**user_data)
@@ -72,73 +72,3 @@ class HBnBFacade:
 
     def get_all_places(self):
         return self.place_repo.get_all()
-
-    def update_place(self, place_id, place_data):
-        place = self.get_place(place_id)
-        if not place:
-            raise ValueError("Place not found")
-            
-        if 'owner_id' in place_data:
-             del place_data['owner_id']
-             
-        if 'amenities' in place_data:
-             del place_data['amenities']
-
-        self.place_repo.update(place_id, place_data)
-        return self.place_repo.get(place_id)
-
-    def create_review(self, review_data):
-        user_id = review_data.get('user_id')
-        user = self.get_user(user_id)
-        if not user:
-            raise ValueError("User not found")
-
-        place_id = review_data.get('place_id')
-        place = self.get_place(place_id)
-        if not place:
-            raise ValueError("Place not found")
-
-        del review_data['user_id']
-        del review_data['place_id']
-        review_data['user'] = user
-        review_data['place'] = place
-
-        review = Review(**review_data)
-        
-        self.review_repo.add(review)
-        place.add_review(review)
-        user.add_review(review)
-
-        return review
-
-    def get_review(self, review_id):
-        return self.review_repo.get(review_id)
-
-    def get_all_reviews(self):
-        return self.review_repo.get_all()
-
-    def get_reviews_by_place(self, place_id):
-        place = self.get_place(place_id)
-        if not place:
-            return None
-        return place.reviews
-
-    def update_review(self, review_id, review_data):
-        review = self.get_review(review_id)
-        if not review:
-            raise ValueError("Review not found")
-            
-        if 'user_id' in review_data:
-            del review_data['user_id']
-        if 'place_id' in review_data:
-            del review_data['place_id']
-
-        self.review_repo.update(review_id, review_data)
-        return self.review_repo.get(review_id)
-
-    def delete_review(self, review_id):
-        review = self.get_review(review_id)
-        if not review:
-            return False
-        self.review_repo.delete(review_id)
-        return True
