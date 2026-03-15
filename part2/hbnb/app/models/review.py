@@ -7,7 +7,7 @@ class Review(BaseModel):
     text = db.Column(db.String(1000), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
     place_id = db.Column(db.String(36), db.ForeignKey('places.id'), nullable=False)
-    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('User.id'), nullable=False)
 
     def __init__(self, text, rating, place_id, user_id, **kwargs):
         super().__init__(**kwargs)
