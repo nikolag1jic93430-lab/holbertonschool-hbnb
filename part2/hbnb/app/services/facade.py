@@ -11,6 +11,7 @@ class HBnBFacade:
         self.review_repo = SQLAlchemyRepository(Review)
         self.amenity_repo = SQLAlchemyRepository(Amenity)
 
+    # --- USER METHODS ---
     def create_user(self, user_data):
         user = User(**user_data)
         return self.user_repo.add(user)
@@ -28,6 +29,7 @@ class HBnBFacade:
         self.user_repo.update(user_id, user_data)
         return self.user_repo.get(user_id)
 
+    # --- AMENITY METHODS ---
     def create_amenity(self, amenity_data):
         amenity = Amenity(**amenity_data)
         return self.amenity_repo.add(amenity)
@@ -42,6 +44,7 @@ class HBnBFacade:
         self.amenity_repo.update(amenity_id, amenity_data)
         return self.amenity_repo.get(amenity_id)
 
+    # --- PLACE METHODS ---
     def create_place(self, place_data):
         owner_id = place_data.get('owner_id')
         owner = self.get_user(owner_id)
@@ -75,6 +78,7 @@ class HBnBFacade:
         self.place_repo.update(place_id, place_data)
         return self.place_repo.get(place_id)
 
+    # --- REVIEW METHODS ---
     def create_review(self, review_data):
         user_id = review_data.get('user_id')
         if not self.get_user(user_id):
@@ -93,7 +97,7 @@ class HBnBFacade:
         return self.review_repo.add(review)
 
     def get_review(self, review_id):
-        return self.review_repo.get(review_id)
+        return self.review_repo.get_review(review_id)
 
     def get_all_reviews(self):
         return self.review_repo.get_all()
@@ -101,3 +105,21 @@ class HBnBFacade:
     def update_review(self, review_id, review_data):
         self.review_repo.update(review_id, review_data)
         return self.review_repo.get(review_id)
+
+    # RELATION PLACE & AMENITY 
+    def add_amenity_to_place(self, place_id, amenity_id):
+        """Liaison entre une place et un équipement"""
+        place = self.get_place(place_id)
+        if not place:
+            raise ValueError("Place not found")
+
+        amenity = self.get_amenity(amenity_id)
+        if not amenity:
+            raise ValueError("Amenity not found")
+
+        if amenity not in place.amenities:
+            place.amenities.append(amenity)
+            # Sauvegarde la mise à jour
+            self.place_repo.update(place.id, {})
+        
+        return place
