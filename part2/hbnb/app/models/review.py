@@ -15,7 +15,7 @@ class Review(BaseModel):
         self.text = text
         self.rating = rating
         self.place_id = place_id
-        self.User_id = user_id
+        self.user_id = user_id
 
     def validate_review(self, text, rating):
         if not text:
