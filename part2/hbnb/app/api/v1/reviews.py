@@ -17,8 +17,8 @@ review_update_model = api.model('ReviewUpdate', {
 
 @api.route('/')
 class ReviewList(Resource):
-    @api.expect(review_model, validate=True)
-    @api.response(201, 'Review successfully created')
+@api.expect(review_model, validate=False)
+@api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
         """Register a new review"""
