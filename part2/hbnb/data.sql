@@ -1,6 +1,6 @@
 -- Admin User 
 INSERT INTO User (id, first_name, last_name, email, password, is_admin)
-VALUES ('36c9050e-ddd3-4c3b-9731-9f487208bbc1', 'Admin', 'HBnB', 'admin@hbnb.io', '$2b$12$LQvPHiMmcVV5V2GzXfA.O.YyWz6GptN6X.S.mUuR8K5fE6m.2kH62', TRUE);
+VALUES ('36c9050e-ddd3-442b-9731-9f487208bbc1', 'Admin', 'HBnB', 'admin@hbnb.io', '$2b$12$8v5N6VvOAn.pXp/v5GZfO.7y5X7P1.K5G2k6h7Q6G5F4E3D2C1B0.', TRUE);
 
 -- Amenities
 INSERT INTO Amenity (id, name) VALUES ('788e25d2-36c5-4d2c-9a1b-123456789abc', 'WiFi');
