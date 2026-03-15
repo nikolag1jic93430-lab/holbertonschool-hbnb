@@ -20,6 +20,7 @@ class HBnBFacade:
         return self.user_repo.get(user_id)
 
     def get_user_by_email(self, email):
+        # Crucial pour le login : récupère l'utilisateur par son email
         return self.user_repo.get_by_attribute('email', email)
 
     def get_all_users(self):
@@ -28,6 +29,9 @@ class HBnBFacade:
     def update_user(self, user_id, user_data):
         self.user_repo.update(user_id, user_data)
         return self.user_repo.get(user_id)
+
+    def delete_user(self, user_id):
+        return self.user_repo.delete(user_id)
 
     # --- AMENITY METHODS ---
     def create_amenity(self, amenity_data):
@@ -43,6 +47,9 @@ class HBnBFacade:
     def update_amenity(self, amenity_id, amenity_data):
         self.amenity_repo.update(amenity_id, amenity_data)
         return self.amenity_repo.get(amenity_id)
+
+    def delete_amenity(self, amenity_id):
+        return self.amenity_repo.delete(amenity_id)
 
     # --- PLACE METHODS ---
     def create_place(self, place_data):
@@ -78,7 +85,9 @@ class HBnBFacade:
         self.place_repo.update(place_id, place_data)
         return self.place_repo.get(place_id)
 
-    # --- REVIEW METHODS ---
+    def delete_place(self, place_id):
+        return self.place_repo.delete(place_id)
+
     def create_review(self, review_data):
         user_id = review_data.get('user_id')
         if not self.get_user(user_id):
@@ -97,7 +106,7 @@ class HBnBFacade:
         return self.review_repo.add(review)
 
     def get_review(self, review_id):
-        return self.review_repo.get_review(review_id)
+        return self.review_repo.get(review_id)
 
     def get_all_reviews(self):
         return self.review_repo.get_all()
@@ -106,9 +115,11 @@ class HBnBFacade:
         self.review_repo.update(review_id, review_data)
         return self.review_repo.get(review_id)
 
-    # RELATION PLACE & AMENITY 
+    def delete_review(self, review_id):
+        return self.review_repo.delete(review_id)
+
+    # --- RELATION PLACE & AMENITY ---
     def add_amenity_to_place(self, place_id, amenity_id):
-        """Liaison entre une place et un équipement"""
         place = self.get_place(place_id)
         if not place:
             raise ValueError("Place not found")
@@ -119,7 +130,7 @@ class HBnBFacade:
 
         if amenity not in place.amenities:
             place.amenities.append(amenity)
-            # Sauvegarde la mise à jour
+            # On force la mise à jour via le repo
             self.place_repo.update(place.id, {})
         
         return place
