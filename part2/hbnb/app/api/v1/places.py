@@ -16,7 +16,7 @@ place_model = api.model('Place', {
 class PlaceList(Resource):
     @api.expect(place_model, validate=False)
     def post(self):
-        """Register a new place (Basic attributes only)"""
+        """Register a new place"""
         place_data = api.payload
         try:
             new_place = facade.create_place(place_data)
@@ -44,7 +44,7 @@ class PlaceList(Resource):
 @api.route('/<place_id>')
 class PlaceResource(Resource):
     def get(self, place_id):
-        """Get place details (Basic attributes only)"""
+        # Nouveau : Récupère les détails complets incluant owner, amenities et reviews
         place = facade.get_place(place_id)
         if not place:
             return {'error': 'Place not found'}, 404
@@ -56,5 +56,31 @@ class PlaceResource(Resource):
             'price': place.price,
             'latitude': place.latitude,
             'longitude': place.longitude,
-            'owner_id': place.owner_id # Juste l'ID ici aussi
+            'owner': {
+                'id': place.owner.id,
+                'first_name': place.owner.first_name,
+                'last_name': place.owner.last_name,
+                'email': place.owner.email
+            },
+            'amenities': [
+                {'id': a.id, 'name': a.name} for a in place.amenities
+            ],
+            'reviews': [
+                {
+                    'id': r.id, 
+                    'text': r.text, 
+                    'rating': r.rating
+                } for r in place.reviews
+            ]
         }, 200
+
+# Nouveau : Route pour lier une Amenity à une Place (Essentiel Task 8)
+@api.route('/<place_id>/amenities/<amenity_id>')
+class PlaceAmenityLink(Resource):
+    def post(self, place_id, amenity_id):
+        """Link an amenity to a place"""
+        try:
+            facade.add_amenity_to_place(place_id, amenity_id)
+            return {'message': 'Amenity successfully linked to place'}, 200
+        except ValueError as e:
+            return {'error': str(e)}, 400
