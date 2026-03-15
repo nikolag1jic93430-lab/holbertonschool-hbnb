@@ -42,11 +42,23 @@ class HBnBFacade:
         self.amenity_repo.update(amenity_id, amenity_data)
         return self.amenity_repo.get(amenity_id)
 
-    def create_place(self, place_data):
+def create_place(self, place_data):
         owner_id = place_data.get('owner_id')
+        
         owner = self.get_user(owner_id)
         if not owner:
             raise ValueError("Owner not found")
+
+        place = Place(
+            title=place_data.get('title'),
+            description=place_data.get('description'),
+            price=place_data.get('price'),
+            latitude=place_data.get('latitude'),
+            longitude=place_data.get('longitude'),
+            owner_id=owner_id
+        )
+
+        return self.place_repo.add(place)
 
         place = Place(
             title=place_data.get('title'),
