@@ -19,7 +19,16 @@ class LoginResource(Resource):
         data = api.payload
         user = facade.get_user_by_email(data['email'])
 
-        # Vérification sécurisée avec Bcrypt
+        # --- ZONE DE DEBUG ---
+        if user:
+            print(f"DEBUG: Mot de passe en base -> {user.password}")
+            # On vérifie si Bcrypt valide la comparaison
+            is_valid = check_password_hash(user.password, data['password'])
+            print(f"DEBUG: Comparaison Bcrypt -> {is_valid}")
+        else:
+            print("DEBUG: Utilisateur non trouvé dans la base")
+        # ---------------------
+
         if user and check_password_hash(user.password, data['password']):
             # On crée le token avec l'email et le statut admin
             access_token = create_access_token(
@@ -27,5 +36,4 @@ class LoginResource(Resource):
             )
             return {'access_token': access_token}, 200
         
-        # Si l'utilisateur n'existe pas ou le mot de passe est faux
         return {'msg': 'Email ou mot de passe invalide'}, 401
