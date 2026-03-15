@@ -1,7 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import create_access_token
 from app.services import facade
-from flask_bcrypt import check_password_hash
 
 api = Namespace('auth', description='Opérations d\'authentification')
 
@@ -18,8 +17,16 @@ class LoginResource(Resource):
         data = api.payload
         user = facade.get_user_by_email(data['email'])
 
-        if user and check_password_hash(user.password, data['password']):
-            # On stocke l'email et le statut admin dans le token
+        # Log pour debug : affiche ce qu'on trouve en base dans ton terminal
+        if user:
+            print(f"Utilisateur trouvé : {user.email}")
+            print(f"Mot de passe en base : {user.password}")
+            print(f"Mot de passe envoyé : {data['password']}")
+        else:
+            print("Utilisateur non trouvé dans la base.")
+
+        # Vérification en texte clair (temporaire pour test)
+        if user and user.password == data['password']:
             access_token = create_access_token(identity={'email': user.email, 'is_admin': user.is_admin})
             return {'access_token': access_token}, 200
         
