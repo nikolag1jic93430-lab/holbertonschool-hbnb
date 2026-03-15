@@ -16,28 +16,9 @@ class User(BaseModel):
     reviews = db.relationship('Review', backref='author', lazy=True, cascade="all, delete-orphan")
 
     def hash_password(self, password):
-        """Hache le mot de passe avant de le stocker."""
+        """Hache le mot de passe."""
         self.password = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def verify_password(self, password):
         """Vérifie le mot de passe."""
         return bcrypt.check_password_hash(self.password, password)
-
-    @validates('first_name')
-    def validate_first_name(self, key, value):
-        if not value or len(value) > 50:
-            raise ValueError("First name is required and must be max 50 characters.")
-        return value
-
-    @validates('last_name')
-    def validate_last_name(self, key, value):
-        if not value or len(value) > 50:
-            raise ValueError("Last name is required and must be max 50 characters.")
-        return value
-
-    @validates('email')
-    def validate_email(self, key, value):
-        email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+$'
-        if not value or not re.match(email_regex, value):
-            raise ValueError("Invalid email format.")
-        return value
