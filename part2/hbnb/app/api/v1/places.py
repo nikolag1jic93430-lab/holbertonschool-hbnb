@@ -1,8 +1,14 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
 from flask_jwt_extended import jwt_required
+from flask_jwt_extended.exceptions import NoAuthorizationError
+
 api = Namespace('places', description='Place operations')
 
+@api.errorhandler(NoAuthorizationError)
+def handle_auth_error(e):
+    return {'error': str(e)}, 401
+    
 place_model = api.model('Place', {
     'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(description='Description of the place'),
