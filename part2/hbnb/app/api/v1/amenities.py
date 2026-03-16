@@ -1,5 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
+from flask_jwt_extended import jwt_required, get_jwt
 
 api = Namespace('amenities', description='Amenity operations')
 
@@ -9,11 +10,19 @@ amenity_model = api.model('Amenity', {
 
 @api.route('/')
 class AmenityList(Resource):
+    
     @api.expect(amenity_model, validate=False)
     @api.response(201, 'Amenity successfully created')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Admin privilege required') 
+    @jwt_required() 
     def post(self):
         """Register a new amenity"""
+        
+        claims = get_jwt()
+        if not claims.get('is_admin'):
+            return {'error': 'Admin privilege required'}, 403
+
         amenity_data = api.payload
         try:
             new_amenity = facade.create_amenity(amenity_data)
