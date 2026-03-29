@@ -43,7 +43,7 @@ Our application uses the **Facade Pattern** to completely isolate the API endpoi
 
 1. **Clone the repository:**
    ```bash
-   git clone <your-repo-link>
+   git clone https://github.com/ChaffyLace/holbertonschool-hbnb.git
    cd hbnb/part3
    ```
 2. **Set up the virtual environment:**
