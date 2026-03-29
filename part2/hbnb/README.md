@@ -1,95 +1,111 @@
-# HBnB Evolution API (Part 2)
+```markdown
+# 🏨 HBnB Backend - Phase 3: Persistence & Security
 
-This project is a simplified backend for an AirBnB-like application, built with Python, Flask, and Flask-RESTx. It follows a modular layered architecture and utilizes the Facade design pattern to manage communication between layers.
+Welcome to the third iteration of the HBnB project. In this phase, our application graduates from a stateless, in-memory prototype to a fully persistent, secure, and production-ready RESTful API. We have integrated a relational database and a robust authentication system while maintaining our clean, three-tier architecture.
 
-## Architecture
+## 🚀 The Evolution: What's New?
 
-The application is built using a strict layered architecture:
-1. **Presentation Layer (API)**: Handled by Flask-RESTx, exposing RESTful endpoints.
-2. **Business Logic Layer**: Contains the core Python models (`User`, `Place`, `Review`, `Amenity`) and strict data validation using `@property` decorators.
-3. **Persistence Layer**: Currently implemented as an In-Memory Repository, storing data in Python dictionaries for rapid development and testing.
-4. **Facade Pattern**: The `HBnBFacade` acts as the single entry point between the API and the Business Logic/Persistence layers, abstracting the complexity of data manipulation and relationships.
+This phase focuses on three major technical upgrades:
 
-## Installation and Execution
+1. **Relational Data Storage (SQLAlchemy):** We completely replaced the temporary Python dictionaries with an SQLite database managed via SQLAlchemy. Data is now safely persisted across server restarts.
+2. **Secure Passwords (Bcrypt):** Plain-text passwords are a thing of the past. Passwords are now mathematically hashed and salted before ever reaching the database.
+3. **Stateless Authentication (JWT):** We introduced JSON Web Tokens to handle user sessions. Endpoints are now protected, ensuring users can only access what they are authorized to see.
+4. **Role-Based Access Control & Ownership:** Built-in logic to separate regular users from Administrators, and strict rules ensuring users can only modify their own creations (Places/Reviews).
 
-1. Create a virtual environment: `python3 -m venv venv`
-2. Activate it: `source venv/bin/activate` (Mac/Linux) or `.\venv\Scripts\activate` (Windows)
-3. Install dependencies: `pip install -r requirements.txt`
-4. Run the application: `python3 run.py`
+## 🏗️ System Architecture
 
-Access the Swagger UI documentation at: `http://127.0.0.1:5000/api/v1/`
+Our application uses the **Facade Pattern** to completely isolate the API endpoints from the database logic. 
 
-## Business Logic Layer
+```text
+[ Client (Swagger / cURL) ]
+            │
+            ▼ (HTTP Requests + JWT)
+    [ API Presentation Layer ] ──────▶ [ Auth & RBAC Check ]
+            │
+            ▼
+    [ Business Logic Facade ]  ──────▶ [ Bcrypt Hashing ]
+            │
+            ▼
+   [ SQLAlchemy Repository ]
+            │
+            ▼
+  [ SQLite Relational Database ]
+```
 
-The `app/models/` directory contains the core domain entities:
-- **BaseModel**: Handles UUID generation and audit timestamps (`created_at`, `updated_at`).
-- **User**: Manages user profiles and authentication data.
-- **Place**: Represents rental properties, validating geographical coordinates and prices.
-- **Review**: Captures user feedback for a specific place.
-- **Amenity**: Defines features associated with places (e.g., Wi-Fi).
+## 🛠️ Tech Stack
 
-All entities inherit from `BaseModel` and utilize Python `@property` decorators to enforce strict data validation before state changes.
+* **Language:** Python 3.8+
+* **Framework:** Flask & Flask-RESTx
+* **Database & ORM:** SQLite3, SQLAlchemy
+* **Security:** Flask-JWT-Extended, Flask-Bcrypt
 
-## API Endpoints
+## 💻 Installation & Setup
 
-The API is fully documented via Swagger. Below are the primary endpoints available in version 1.0:
+1. **Clone the repository:**
+   ```bash
+   git clone <your-repo-link>
+   cd hbnb/part3
+   ```
+2. **Set up the virtual environment:**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+3. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. **Run the server:**
+   ```bash
+   python run.py
+   ```
+   *The Swagger UI is now available at `http://127.0.0.1:5000/api/v1/`.*
 
-* **Users**:
-  * `POST /api/v1/users/` - Create a new user
-  * `GET /api/v1/users/` - Retrieve all users
-  * `GET /api/v1/users/<id>` - Retrieve a user by ID
-  * `PUT /api/v1/users/<id>` - Update a user
-* **Amenities**:
-  * `POST /api/v1/amenities/` - Create an amenity
-  * `GET /api/v1/amenities/` - Retrieve all amenities
-  * `GET /api/v1/amenities/<id>` - Retrieve an amenity by ID
-  * `PUT /api/v1/amenities/<id>` - Update an amenity
-* **Places**:
-  * `POST /api/v1/places/` - Create a place (requires valid owner_id)
-  * `GET /api/v1/places/` - Retrieve all places
-  * `GET /api/v1/places/<id>` - Retrieve a place by ID (includes owner and amenities details)
-  * `PUT /api/v1/places/<id>` - Update a place
-  * `GET /api/v1/places/<id>/reviews` - Retrieve all reviews for a specific place
-* **Reviews**:
-  * `POST /api/v1/reviews/` - Create a review (requires valid user_id and place_id)
-  * `GET /api/v1/reviews/` - Retrieve all reviews
-  * `GET /api/v1/reviews/<id>` - Retrieve a review by ID
-  * `PUT /api/v1/reviews/<id>` - Update a review
-  * `DELETE /api/v1/reviews/<id>` - Delete a review
+## 🔒 API Endpoints & Access Levels
 
----
+Most endpoints now require an `Authorization: Bearer <token>` header. Here is a summary of the security rules implemented:
 
-## Testing Report
+| Resource Area | Endpoint Example | Required Access Level | Description |
+|---|---|---|---|
+| **Authentication** | `POST /auth/login` | **Public** | Returns a JWT access token. |
+| **Users** | `POST /users/` | **Public** | Account registration. |
+| **Users** | `GET /users/` | **Admin Only** | Only admins can list all users. |
+| **Places** | `POST /places/` | **Authenticated** | Any logged-in user can create a place. |
+| **Places** | `PUT /places/<id>` | **Owner Only** | Must be the exact user who created the place. |
+| **Amenities** | `POST /amenities/` | **Admin Only** | Only admins can manage the amenity catalog. |
 
-This section documents the black-box testing performed on the API endpoints using `cURL`, covering both successful operations and error handling. Automated unit tests are also provided in the `tests/` directory using Python's `unittest` framework.
+## 🧠 Implementation Highlights
 
-### 1. User Endpoints
+### 1. The ORM Mapping
+Instead of manually writing SQL, we mapped our classes to database tables. For example, the `Place` model now defines its relationships natively:
+* A `Place` belongs to one `User` (One-to-Many).
+* A `Place` can have multiple `Amenities` (Many-to-Many).
 
-**Test: Create a User (Success)**
-* **Command:** `curl -X POST "http://127.0.0.1:5000/api/v1/users/" -H "Content-Type: application/json" -d '{"first_name": "John", "last_name": "Doe", "email": "john.doe@example.com"}'`
-* **Expected Output:** `201 Created` with user JSON object.
-* **Result:** Passed.
+### 2. Securing the Facade
+Our `HBnBFacade` intercepts user creation to hash the password transparently:
+```python
+def create_user(self, user_data):
+    # Passwords are hashed before database insertion
+    if 'password' in user_data:
+        user_data['password'] = generate_password_hash(user_data['password']).decode('utf-8')
+    user = User(**user_data)
+    return self.user_repo.add(user)
+```
 
-**Test: Create a User (Invalid Email)**
-* **Command:** `curl -X POST "http://127.0.0.1:5000/api/v1/users/" -H "Content-Type: application/json" -d '{"first_name": "John", "last_name": "Doe", "email": "invalid-format"}'`
-* **Expected Output:** `400 Bad Request` with error message.
-* **Result:** Passed. Validation logic correctly caught the format error.
+### 3. Protecting the Routes
+Using decorators, we enforce security at the API layer before the Facade is even called:
+```python
+@jwt_required()
+def put(self, place_id):
+    current_user = get_jwt_identity()
+    # Ownership logic here...
+```
 
-### 2. Place Endpoints (Boundary Testing)
+## 📚 Technical Glossary
 
-**Test: Create a Place (Invalid Price - Negative)**
-* **Command:** `curl -X POST "http://127.0.0.1:5000/api/v1/places/" -H "Content-Type: application/json" -d '{"title": "Test Place", "description": "A place", "price": -50.0, "latitude": 30.0, "longitude": 40.0, "owner_id": "VALID_ID", "amenities": []}'`
-* **Expected Output:** `400 Bad Request`.
-* **Result:** Passed. Model validation rejected the negative price.
+* **JWT (JSON Web Token):** A secure, encoded string used to identify a logged-in user without the server needing to remember their session.
+* **ORM (Object-Relational Mapper):** A tool (SQLAlchemy) that translates Python code into SQL queries automatically.
+* **RBAC (Role-Based Access Control):** A security concept where access is granted based on the user's role (e.g., User vs Admin).
+* **Salt & Hash (Bcrypt):** A cryptographic process that turns a password into an irreversible string, making data breaches harmless.
 
-**Test: Create a Place (Out of range Latitude)**
-* **Command:** `curl -X POST "http://127.0.0.1:5000/api/v1/places/" -H "Content-Type: application/json" -d '{"title": "Test Place", "description": "A place", "price": 100.0, "latitude": 150.0, "longitude": 40.0, "owner_id": "VALID_ID", "amenities": []}'`
-* **Expected Output:** `400 Bad Request`.
-* **Result:** Passed. The system correctly enforced the -90.0 to 90.0 latitude boundary constraint.
-
-### 3. Error Handling
-
-**Test: Retrieve a Non-Existent Resource**
-* **Command:** `curl -X GET "http://127.0.0.1:5000/api/v1/users/fake-uuid-1234"`
-* **Expected Output:** `404 Not Found`.
-* **Result:** Passed. The Facade correctly returned None, triggering the 404 response.
+```
