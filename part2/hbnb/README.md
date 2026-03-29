@@ -103,7 +103,9 @@ def put(self, place_id):
 
 ## 📚 Technical Glossary
 
-* **JWT (JSON Web Token):** A secure, encoded string used to identify a logged-in user without the server needing to remember their session.
-* **ORM (Object-Relational Mapper):** A tool (SQLAlchemy) that translates Python code into SQL queries automatically.
-* **RBAC (Role-Based Access Control):** A security concept where access is granted based on the user's role (e.g., User vs Admin).
-* **Salt & Hash (Bcrypt):** A cryptographic process that turns a password into an irreversible string, making data breaches harmless.
+* **Python 3 / Flask** (Web Framework)
+* **Flask-RESTx** (API Documentation and Swagger UI)
+* **SQLAlchemy** (Relational ORM)
+* **Flask-Bcrypt** (Cryptographic Password Hashing)
+* **Flask-JWT-Extended** (Token Generation and Validation)
+* **SQLite** (Relational Database Engine)
