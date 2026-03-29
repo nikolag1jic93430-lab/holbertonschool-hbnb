@@ -107,5 +107,3 @@ def put(self, place_id):
 * **ORM (Object-Relational Mapper):** A tool (SQLAlchemy) that translates Python code into SQL queries automatically.
 * **RBAC (Role-Based Access Control):** A security concept where access is granted based on the user's role (e.g., User vs Admin).
 * **Salt & Hash (Bcrypt):** A cryptographic process that turns a password into an irreversible string, making data breaches harmless.
-
-```
