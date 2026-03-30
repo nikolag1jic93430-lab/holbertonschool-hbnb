@@ -85,6 +85,5 @@ class SQLAlchemyRepository(Repository):
             db.session.commit()
 
     def get_by_attribute(self, attr_name, attr_value):
-        # On vide le cache de la session pour forcer la lecture réelle du fichier .db
         db.session.expire_all()
         return self.model.query.filter_by(**{attr_name: attr_value}).first()
