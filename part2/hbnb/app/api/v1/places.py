@@ -81,7 +81,6 @@ class PlaceResource(Resource):
             ]
         }, 200
 
-    # --- NOUVELLE MÉTHODE PUT SÉCURISÉE ---
     @api.expect(place_model, validate=False)
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
