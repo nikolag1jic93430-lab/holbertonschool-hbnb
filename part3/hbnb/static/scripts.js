@@ -98,6 +98,56 @@ function filterPlaces(countryName) {
     }
 }
 
+async function fetchPlaceDetails(token, placeId) {
+    const apiPlaceUrl = `http://127.0.0.1:5000/places/${placeId}`;
+    try {
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const response = await fetch(apiPlaceUrl, { method: 'GET', headers: headers });
+
+        if (response.ok) {
+            const place = await response.json();
+            displayPlaceDetails(place);
+
+            if (token) {
+                const addReviewSection = document.getElementById('add-review');
+                const addReviewLink = document.getElementById('add-review-link');
+                if (addReviewSection && addReviewLink) {
+                    addReviewSection.style.display = 'block';
+                    addReviewLink.href = `add_review.html?id=${placeId}`;
+                }
+            }
+        } else {
+            console.error("Error fetching place details");
+        }
+    } catch (error) {
+        console.error('Network error:', error);
+    }
+}
+
+function displayPlaceDetails(place) {
+    const detailsContainer = document.getElementById('place-details');
+    if (detailsContainer) {
+        detailsContainer.innerHTML = `
+            <h1>${place.name}</h1>
+            <p><strong>Price:</strong> $${place.price_per_night} / night</p>
+            <p><strong>Location:</strong> ${place.city_name}, ${place.country_name}</p>
+            <p><strong>Description:</strong> ${place.description}</p>
+        `;
+    }
+
+    const reviewsContainer = document.getElementById('reviews-container');
+    if (reviewsContainer) {
+        reviewsContainer.innerHTML = '';
+        if (place.reviews && place.reviews.length > 0) {
+            place.reviews.forEach(review => {
+                reviewsContainer.innerHTML += `<p><strong>Rating: ${review.rating}/5</strong> - ${review.comment}</p>`;
+            });
+        } else {
+            reviewsContainer.innerHTML = "<p>No reviews yet.</p>";
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const path = window.location.pathname;
 
@@ -162,6 +212,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
+    }
+
+    if (path.includes('place.html')) {
+        const placeId = getPlaceIdFromURL();
+        if (!placeId) {
+            alert("Error: Place ID not found.");
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        const token = getCookie('token');
+        fetchPlaceDetails(token, placeId);
     }
 
     if (path === '/' || path.includes('index.html')) {
