@@ -1,8 +1,9 @@
-from flask import Flask
+from flask import Flask, send_from_directory # <-- AJOUT : send_from_directory
 from flask_restx import Api
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
+from flask_cors import CORS  # <-- AJOUT : Importation de la bibliothèque CORS
 
 # Initialisation des extensions
 db = SQLAlchemy()
@@ -20,8 +21,12 @@ authorizations = {
 }
 
 def create_app(config_class="config.DevelopmentConfig"):
-    app = Flask(__name__)
+    # <-- AJOUT : Configuration pour trouver le dossier static
+    app = Flask(__name__, static_url_path='', static_folder='../static')
     app.config.from_object(config_class)
+
+    # <-- AJOUT : Activation de CORS pour permettre au front-end de faire des requêtes vers l'API
+    CORS(app)
 
     # Initialisation des applications avec l'instance Flask
     db.init_app(app)
@@ -52,5 +57,14 @@ def create_app(config_class="config.DevelopmentConfig"):
     api.add_namespace(places_ns, path='/api/v1/places')
     api.add_namespace(reviews_ns, path='/api/v1/reviews')
     api.add_namespace(auth_ns, path='/api/v1/auth')
+
+    # --- AJOUT : Routes pour servir les fichiers frontend ---
+    @app.route('/')
+    def serve_index():
+        return send_from_directory(app.static_folder, 'index.html')
+
+    @app.route('/<path:path>')
+    def serve_static_files(path):
+        return send_from_directory(app.static_folder, path)
 
     return app

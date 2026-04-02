@@ -1,0 +1,8 @@
+ source /mnt/c/Users/vediu/Documents/holbertonschool-hbnb/part3/hbnb/venv/bin/activate
+venv/
+__pycache__/
+*.pyc
+.env
+instance/
+.pytest_cache/
+*.db

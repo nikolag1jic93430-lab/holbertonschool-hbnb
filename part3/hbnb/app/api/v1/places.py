@@ -18,6 +18,12 @@ place_model = api.model('Place', {
     'owner_id': fields.String(required=True, description='ID of the owner')
 })
 
+# Modèle pour la validation des reviews
+review_model = api.model('PlaceReview', {
+    'text': fields.String(required=True, description='Text of the review'),
+    'rating': fields.Integer(required=True, description='Rating (1-5)')
+})
+
 @api.route('/')
 class PlaceList(Resource):
     
@@ -81,15 +87,10 @@ class PlaceResource(Resource):
             ]
         }, 200
 
-    # --- NOUVELLE MÉTHODE PUT SÉCURISÉE ---
     @api.expect(place_model, validate=False)
-    @api.response(200, 'Place updated successfully')
-    @api.response(404, 'Place not found')
-    @api.response(400, 'Invalid input data')
-    @api.response(403, 'Unauthorized action')
     @jwt_required()
     def put(self, place_id):
-        """Update a place's information (Only for the owner)"""
+        """Update a place's information"""
         current_user_id = get_jwt_identity()
         place = facade.get_place(place_id)
 
@@ -106,9 +107,37 @@ class PlaceResource(Resource):
         except ValueError as e:
             return {'error': str(e)}, 400
 
+# --- NOUVELLE SECTION POUR LES REVIEWS ---
+@api.route('/<place_id>/reviews')
+class PlaceReviewList(Resource):
+    @api.expect(review_model)
+    @jwt_required()
+    def post(self, place_id):
+        """Add a review to a specific place"""
+        current_user_id = get_jwt_identity()
+        review_data = api.payload
+
+        # On vérifie si la place existe
+        place = facade.get_place(place_id)
+        if not place:
+            return {'error': 'Place not found'}, 404
+
+        try:
+            # On ajoute les IDs nécessaires pour la facade
+            review_data['user_id'] = current_user_id
+            review_data['place_id'] = place_id
+            
+            new_review = facade.create_review(review_data)
+            return {
+                'id': new_review.id,
+                'text': new_review.text,
+                'rating': new_review.rating
+            }, 201
+        except ValueError as e:
+            return {'error': str(e)}, 400
+
 @api.route('/<place_id>/amenities/<amenity_id>')
 class PlaceAmenityLink(Resource):
-    
     @jwt_required()
     def post(self, place_id, amenity_id):
         """Link an amenity to a place"""

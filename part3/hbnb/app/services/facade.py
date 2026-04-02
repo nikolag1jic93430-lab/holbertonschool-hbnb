@@ -12,10 +12,11 @@ class HBnBFacade:
         self.review_repo = SQLAlchemyRepository(Review)
         self.amenity_repo = SQLAlchemyRepository(Amenity)
 
+    # --- USER METHODS ---
     def create_user(self, user_data):
         if 'password' in user_data:
             user_data['password'] = generate_password_hash(user_data['password']).decode('utf-8')
-            
+        
         user = User(**user_data)
         return self.user_repo.add(user)
 
@@ -28,13 +29,7 @@ class HBnBFacade:
     def get_all_users(self):
         return self.user_repo.get_all()
 
-    def update_user(self, user_id, user_data):
-        self.user_repo.update(user_id, user_data)
-        return self.user_repo.get(user_id)
-
-    def delete_user(self, user_id):
-        return self.user_repo.delete(user_id)
-
+    # --- AMENITY METHODS ---
     def create_amenity(self, amenity_data):
         amenity = Amenity(**amenity_data)
         return self.amenity_repo.add(amenity)
@@ -45,14 +40,16 @@ class HBnBFacade:
     def get_all_amenities(self):
         return self.amenity_repo.get_all()
 
-    def update_amenity(self, amenity_id, amenity_data):
-        self.amenity_repo.update(amenity_id, amenity_data)
-        return self.amenity_repo.get(amenity_id)
-
-    def delete_amenity(self, amenity_id):
-        return self.amenity_repo.delete(amenity_id)
-
+    # --- PLACE METHODS ---
     def create_place(self, place_data):
+        """
+        Assure-toi que place_data contient 'title' et 'price' 
+        pour correspondre au Frontend.
+        """
+        # Si ton modèle utilise 'name' mais le front envoie 'title', on corrige ici
+        if 'title' in place_data and 'name' not in place_data:
+            place_data['name'] = place_data['title']
+        
         place = Place(**place_data)
         return self.place_repo.add(place)
 
@@ -63,22 +60,23 @@ class HBnBFacade:
         return self.place_repo.get_all()
 
     def update_place(self, place_id, place_data):
+        # On met à jour via le repo
         self.place_repo.update(place_id, place_data)
-        return self.place_repo.get(place_id)
-    
+        return self.get_place(place_id)
+
     def add_amenity_to_place(self, place_id, amenity_id):
         place = self.get_place(place_id)
         amenity = self.get_amenity(amenity_id)
-        if not place:
-            raise ValueError("Place not found")
-        if not amenity:
-            raise ValueError("Amenity not found")
+        if not place or not amenity:
+            raise ValueError("Place or Amenity not found")
             
-        place.amenities.append(amenity)
-        self.place_repo.add(place) 
+        if amenity not in place.amenities:
+            place.amenities.append(amenity)
+            self.place_repo.update(place.id, {}) # Déclenche la sauvegarde
         
         return place
 
+    # --- REVIEW METHODS ---
     def create_review(self, review_data):
         review = Review(**review_data)
         return self.review_repo.add(review)
@@ -88,10 +86,3 @@ class HBnBFacade:
 
     def get_all_reviews(self):
         return self.review_repo.get_all()
-
-    def update_review(self, review_id, review_data):
-        self.review_repo.update(review_id, review_data)
-        return self.review_repo.get(review_id)
-
-    def delete_review(self, review_id):
-        return self.review_repo.delete(review_id)
