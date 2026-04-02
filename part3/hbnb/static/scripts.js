@@ -10,7 +10,7 @@ function getCookie(name) {
     return null;
 }
 
-function checkAuthenticationForReview() {
+function checkAuthentication() {
     const token = getCookie('token');
     if (!token) {
         window.location.href = 'login.html';
@@ -20,7 +20,6 @@ function checkAuthenticationForReview() {
 
 async function submitReview(token, placeId, rating, comment) {
     const apiReviewUrl = `http://127.0.0.1:5000/places/${placeId}/reviews`;
-
     try {
         const response = await fetch(apiReviewUrl, {
             method: 'POST',
@@ -47,27 +46,134 @@ async function submitReview(token, placeId, rating, comment) {
     }
 }
 
+async function fetchPlaces(token) {
+    const apiPlacesUrl = 'http://127.0.0.1:5000/places';
+    try {
+        const response = await fetch(apiPlacesUrl, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const places = await response.json();
+            window.allPlaces = places;
+            displayPlaces(places);
+        } else {
+            console.error('Error fetching places');
+        }
+    } catch (error) {
+        console.error('Network error:', error);
+    }
+}
+
+function displayPlaces(places) {
+    const placesList = document.getElementById('places-list');
+    if (!placesList) return;
+    
+    placesList.innerHTML = '';
+    
+    places.forEach(place => {
+        const placeCard = document.createElement('div');
+        placeCard.className = 'place-card';
+        placeCard.innerHTML = `
+            <h3>${place.name}</h3>
+            <p><strong>Price:</strong> $${place.price_per_night} / night</p>
+            <p><strong>Location:</strong> ${place.city_name}, ${place.country_name}</p>
+            <button onclick="window.location.href='place.html?id=${place.id}'">View Details</button>
+        `;
+        placesList.appendChild(placeCard);
+    });
+}
+
+function filterPlaces(countryName) {
+    if (!window.allPlaces) return;
+    
+    if (countryName === "all" || countryName === "") {
+        displayPlaces(window.allPlaces);
+    } else {
+        const filtered = window.allPlaces.filter(place => place.country_name === countryName);
+        displayPlaces(filtered);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    if (window.location.pathname.includes('add_review.html')) {
-        
-        const token = checkAuthenticationForReview();
+    const path = window.location.pathname;
+
+    if (path.includes('add_review.html')) {
+        const token = checkAuthentication();
         const placeId = getPlaceIdFromURL();
         const reviewForm = document.getElementById('review-form');
 
         if (reviewForm) {
             reviewForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Empêche le rechargement classique de la page
+                event.preventDefault();
                 
                 const rating = document.getElementById('rating').value;
                 const comment = document.getElementById('review-text').value;
 
-                // Petite sécurité supplémentaire
                 if (!placeId) {
-                    alert("Erreur : Impossible de trouver l'ID du logement.");
+                    alert("Error: Place ID not found.");
                     return;
                 }
 
                 await submitReview(token, placeId, rating, comment);
+            });
+        }
+    }
+
+    if (path.includes('login.html')) {
+        const loginForm = document.getElementById('login-form');
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (event) => {
+                event.preventDefault(); 
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const apiLoginUrl = 'http://127.0.0.1:5000/login'; 
+
+                try {
+                    const response = await fetch(apiLoginUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email: email, password: password })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const token = data.access_token || data.token; 
+
+                        if (token) {
+                            document.cookie = `token=${token}; path=/; max-age=86400`;
+                            window.location.href = 'index.html';
+                        } else {
+                            alert("No token received from backend.");
+                        }
+                    } else {
+                        alert('Invalid email or password.');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    alert('Could not connect to server.');
+                }
+            });
+        }
+    }
+
+    if (path === '/' || path.includes('index.html')) {
+        const token = checkAuthentication();
+        if (!token) return;
+
+        fetchPlaces(token);
+
+        const countryFilter = document.getElementById('country-filter');
+        if (countryFilter) {
+            countryFilter.addEventListener('change', (event) => {
+                filterPlaces(event.target.value);
             });
         }
     }
