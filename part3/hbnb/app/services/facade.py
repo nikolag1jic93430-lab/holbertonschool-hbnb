@@ -47,8 +47,8 @@ class HBnBFacade:
         pour correspondre au Frontend.
         """
         # Si ton modèle utilise 'name' mais le front envoie 'title', on corrige ici
-        if 'title' in place_data and 'name' not in place_data:
-            place_data['name'] = place_data['title']
+       # if 'title' in place_data and 'name' not in place_data:
+      #      place_data['name'] = place_data['title']
         
         place = Place(**place_data)
         return self.place_repo.add(place)
