@@ -203,13 +203,15 @@ footer {
 }
 
 #add-review-section {
-    text-align: center;
+    display: flex;
+    justify-content: center;
     margin: 30px auto;
     padding: 20px;
 }
 
 .add-review-button {
     display: inline-block;
+    width: auto !important;
     background-color: #007bff;
     color: white !important;
     padding: 12px 40px;
