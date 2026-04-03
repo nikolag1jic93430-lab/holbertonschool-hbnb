@@ -100,7 +100,7 @@ main {
 }
 
 .details-button {
-    display: inline-block;
+    display: block;
     background-color: #007bff;
     color: white;
     text-decoration: none;
@@ -108,6 +108,7 @@ main {
     margin-top: 15px;
     border-radius: 6px;
     width: 100%;
+    text-align: center;
     font-weight: bold;
 }
 
@@ -203,28 +204,36 @@ footer {
 }
 
 #add-review-section {
-    display: flex !important;
-    justify-content: center !important;
-    margin: 30px auto !important;
-    width: 100% !important;
+    display: flex;
+    justify-content: center;
+    margin: 30px auto;
+    max-width: 800px;
+    padding: 20px 0;
+    background-color: transparent;
 }
 
-.add-review-button {
-    display: block !important;
-    width: 250px !important;
-    background-color: #007bff !important;
-    color: white !important;
-    padding: 12px 0 !important;
-    text-align: center !important;
-    text-decoration: none !important;
-    border-radius: 8px !important;
-    font-size: 1.1rem !important;
-    font-weight: bold !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
-    transition: background 0.3s, transform 0.2s !important;
+.add-review-button, #add-review-button {
+    display: block;
+    width: auto;
+    background-color: #007bff;
+    color: white;
+    padding: 12px 30px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border: none;
+    transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.add-review-button:hover {
-    background-color: #0056b3 !important;
-    transform: translateY(-2px) !important;
+.add-review-button:hover, #add-review-button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.add-review-button:active, #add-review-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
