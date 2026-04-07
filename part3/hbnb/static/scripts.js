@@ -69,7 +69,7 @@ async function fetchPlaces(token) {
 
         if (response.ok) {
             const places = await response.json();
-            window.allPlaces = places;
+            window.allPlaces = places; // Sauvegarde pour le filtre local
             displayPlaces(places);
         }
     } catch (error) {
@@ -122,11 +122,18 @@ function displayPlaces(places) {
 function displayPlaceDetails(place) {
     const detailsContainer = document.getElementById('place-details');
     if (detailsContainer) {
+        // Préparation de la liste des amenities
+        let amenitiesHTML = "None";
+        if (place.amenities && place.amenities.length > 0) {
+            amenitiesHTML = place.amenities.map(a => a.name || a).join(', ');
+        }
+
         detailsContainer.innerHTML = `
             <h1>${place.title || "No Title"}</h1>
             <p><strong>Price:</strong> $${place.price || 0} / night</p>
             <p><strong>Location:</strong> ${place.city_name || "Paris"}, ${place.country_name || "France"}</p>
             <p><strong>Description:</strong> ${place.description || "No description available"}</p>
+            <p><strong>Amenities:</strong> ${amenitiesHTML}</p>
         `;
     }
 
@@ -210,5 +217,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (placeId) fetchPlaceDetails(token, placeId);
     } else if (path === '/' || path.includes('index.html') || path === '') {
         fetchPlaces(token);
+
+        // Filtre par prix
+        const priceFilter = document.getElementById('price-filter');
+        if (priceFilter) {
+            priceFilter.addEventListener('change', (event) => {
+                const selectedPrice = event.target.value;
+                
+                if (!window.allPlaces) return; 
+
+                if (selectedPrice === 'All') {
+                    displayPlaces(window.allPlaces);
+                } else {
+                    const maxPrice = parseInt(selectedPrice, 10);
+                    const filteredPlaces = window.allPlaces.filter(place => place.price <= maxPrice);
+                    displayPlaces(filteredPlaces);
+                }
+            });
+        }
     }
 });
