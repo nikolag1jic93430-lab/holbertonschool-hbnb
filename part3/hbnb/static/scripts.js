@@ -1,5 +1,3 @@
-// --- UTILITAIRES ---
-
 function getPlaceIdFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('id');
@@ -17,7 +15,6 @@ function getCookie(name) {
 }
 
 function logout() {
-    // Supprime le cookie en le faisant expirer
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
     alert("You have been logged out.");
     window.location.href = 'index.html';
@@ -31,8 +28,6 @@ function checkAuthentication(requireAuth = false, redirectUrl = 'index.html') {
     return token;
 }
 
-// --- APPELS API ---
-
 async function submitReview(token, placeId, rating, comment) {
     const apiReviewUrl = `/api/v1/places/${placeId}/reviews`;
     try {
@@ -44,7 +39,7 @@ async function submitReview(token, placeId, rating, comment) {
             },
             body: JSON.stringify({
                 rating: parseInt(rating),
-                text: comment // 'text' pour correspondre au Backend
+                text: comment
             })
         });
 
@@ -69,7 +64,7 @@ async function fetchPlaces(token) {
 
         if (response.ok) {
             const places = await response.json();
-            window.allPlaces = places; // Sauvegarde pour le filtre local
+            window.allPlaces = places;
             displayPlaces(places);
         }
     } catch (error) {
@@ -99,8 +94,6 @@ async function fetchPlaceDetails(token, placeId) {
     }
 }
 
-// --- AFFICHAGE ---
-
 function displayPlaces(places) {
     const placesList = document.getElementById('places-list');
     if (!placesList) return;
@@ -122,18 +115,53 @@ function displayPlaces(places) {
 function displayPlaceDetails(place) {
     const detailsContainer = document.getElementById('place-details');
     if (detailsContainer) {
-        // Préparation de la liste des amenities
-        let amenitiesHTML = "None";
+        let amenitiesListHTML = "";
+
         if (place.amenities && place.amenities.length > 0) {
-            amenitiesHTML = place.amenities.map(a => a.name || a).join(', ');
+            place.amenities.forEach(amenity => {
+                const amenityName = amenity.name || amenity;
+                let iconPath = "";
+
+                if (amenityName.toLowerCase().includes("wifi")) {
+                    iconPath = "images/icon_wifi.png";
+                } else if (amenityName.toLowerCase().includes("bed")) {
+                    iconPath = "images/icon_bed.png";
+                } else if (amenityName.toLowerCase().includes("bath")) {
+                    iconPath = "images/icon_bath.png";
+                }
+
+                if (iconPath !== "") {
+                    amenitiesListHTML += `
+                        <li style="display: flex; align-items: center; gap: 8px; background: #f8f9fa; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem;">
+                            <img src="${iconPath}" alt="${amenityName}" style="width: 20px; height: 20px;">
+                            ${amenityName}
+                        </li>`;
+                } else {
+                    amenitiesListHTML += `
+                        <li style="display: flex; align-items: center; gap: 8px; background: #f8f9fa; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem;">
+                            ${amenityName}
+                        </li>`;
+                }
+            });
+        } else {
+            amenitiesListHTML = "<li>No amenities listed</li>";
         }
+
+        const amenitiesHTML = `
+            <div class="amenities" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                <p style="margin-bottom: 10px;"><strong>Amenities:</strong></p>
+                <ul style="list-style: none; display: flex; flex-wrap: wrap; gap: 15px; padding: 0; margin: 0;">
+                    ${amenitiesListHTML}
+                </ul>
+            </div>
+        `;
 
         detailsContainer.innerHTML = `
             <h1>${place.title || "No Title"}</h1>
             <p><strong>Price:</strong> $${place.price || 0} / night</p>
             <p><strong>Location:</strong> ${place.city_name || "Paris"}, ${place.country_name || "France"}</p>
             <p><strong>Description:</strong> ${place.description || "No description available"}</p>
-            <p><strong>Amenities:</strong> ${amenitiesHTML}</p>
+            ${amenitiesHTML}
         `;
     }
 
@@ -153,13 +181,10 @@ function displayPlaceDetails(place) {
     }
 }
 
-// --- INITIALISATION ---
-
 document.addEventListener('DOMContentLoaded', () => {
     const path = window.location.pathname;
     const token = getCookie('token');
 
-    // Gestion universelle Navbar (Login/Logout)
     const loginLink = document.getElementById('login-link');
     const logoutLink = document.getElementById('logout-link');
     if (token) {
@@ -170,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (logoutLink) logoutLink.style.display = 'none';
     }
 
-    // Page Add Review
     if (path.includes('add_review.html')) {
         checkAuthentication(true);
         const placeId = getPlaceIdFromURL();
@@ -185,7 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Page Login
     if (path.includes('login.html')) {
         const loginForm = document.getElementById('login-form');
         if (loginForm) {
@@ -211,14 +234,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Page Index & Place Details
     if (path.includes('place.html')) {
         const placeId = getPlaceIdFromURL();
         if (placeId) fetchPlaceDetails(token, placeId);
     } else if (path === '/' || path.includes('index.html') || path === '') {
         fetchPlaces(token);
 
-        // Filtre par prix
         const priceFilter = document.getElementById('price-filter');
         if (priceFilter) {
             priceFilter.addEventListener('change', (event) => {

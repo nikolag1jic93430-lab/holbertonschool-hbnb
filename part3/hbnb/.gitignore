@@ -1,8 +1,12 @@
- source /mnt/c/Users/vediu/Documents/holbertonschool-hbnb/part3/hbnb/venv/bin/activate
-venv/
+# On ignore les fichiers compilés par Python
 __pycache__/
 *.pyc
-.env
-instance/
-.pytest_cache/
-*.db
+
+# On ignore l'environnement virtuel (le plus important !)
+venv/
+.venv/
+env/
+../../venv/
+
+# On ignore les fichiers de base de données locaux
+*.sqlite3
