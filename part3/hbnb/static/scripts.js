@@ -1,8 +1,10 @@
+// Function to extract the place ID from the URL query parameters
 function getPlaceIdFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('id');
 }
 
+// Function to retrieve a cookie value by name
 function getCookie(name) {
     const nameEQ = name + "=";
     const ca = document.cookie.split(';');
@@ -14,12 +16,14 @@ function getCookie(name) {
     return null;
 }
 
+// Function to log out the user by clearing the token and redirecting
 function logout() {
     document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
     alert("You have been logged out.");
     window.location.href = 'index.html';
 }
 
+// Function to verify if the user is authenticated
 function checkAuthentication(requireAuth = false, redirectUrl = 'index.html') {
     const token = getCookie('token');
     if (!token && requireAuth) {
@@ -28,6 +32,7 @@ function checkAuthentication(requireAuth = false, redirectUrl = 'index.html') {
     return token;
 }
 
+// Function to send a new review to the API
 async function submitReview(token, placeId, rating, comment) {
     const apiReviewUrl = `/api/v1/places/${placeId}/reviews`;
     try {
@@ -56,6 +61,7 @@ async function submitReview(token, placeId, rating, comment) {
     }
 }
 
+// Function to fetch all places from the backend
 async function fetchPlaces(token) {
     const apiPlacesUrl = '/api/v1/places/';
     try {
@@ -72,6 +78,7 @@ async function fetchPlaces(token) {
     }
 }
 
+// Function to fetch details for a specific place
 async function fetchPlaceDetails(token, placeId) {
     const apiPlaceUrl = `/api/v1/places/${placeId}`;
     try {
@@ -94,6 +101,7 @@ async function fetchPlaceDetails(token, placeId) {
     }
 }
 
+// Function to render place cards on the main page
 function displayPlaces(places) {
     const placesList = document.getElementById('places-list');
     if (!placesList) return;
@@ -112,6 +120,7 @@ function displayPlaces(places) {
     });
 }
 
+// Function to display detailed information and amenities for a place
 function displayPlaceDetails(place) {
     const detailsContainer = document.getElementById('place-details');
     if (detailsContainer) {
@@ -181,6 +190,7 @@ function displayPlaceDetails(place) {
     }
 }
 
+// Event listener for DOM content loaded to initialize page logic
 document.addEventListener('DOMContentLoaded', () => {
     const path = window.location.pathname;
     const token = getCookie('token');
@@ -195,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (logoutLink) logoutLink.style.display = 'none';
     }
 
+    // Logic for the Add Review page
     if (path.includes('add_review.html')) {
         checkAuthentication(true);
         const placeId = getPlaceIdFromURL();
@@ -209,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Logic for the Login page
     if (path.includes('login.html')) {
         const loginForm = document.getElementById('login-form');
         if (loginForm) {
@@ -234,12 +246,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Logic for individual place or index page
     if (path.includes('place.html')) {
         const placeId = getPlaceIdFromURL();
         if (placeId) fetchPlaceDetails(token, placeId);
     } else if (path === '/' || path.includes('index.html') || path === '') {
         fetchPlaces(token);
 
+        // Price filtering logic for the index page
         const priceFilter = document.getElementById('price-filter');
         if (priceFilter) {
             priceFilter.addEventListener('change', (event) => {
